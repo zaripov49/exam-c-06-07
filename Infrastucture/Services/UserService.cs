@@ -1,13 +1,15 @@
 using System.Net;
+using AutoMapper;
 using Domain.ApiResponse;
 using Domain.DTOs.UserDTO;
+using Domain.Filters;
 using Infrastucture.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastucture.Services;
 
-public class UserService(UserManager<IdentityUser> userManager) : IUserService
+public class UserService(UserManager<IdentityUser> userManager, IMapper mapper) : IUserService
 {
     public async Task<Response<string>> DeleteUserAsync(string id)
     {
@@ -21,17 +23,25 @@ public class UserService(UserManager<IdentityUser> userManager) : IUserService
         return new Response<string>("Successfuly");
     }
 
-    public async Task<Response<List<GetUserDTO>>> GetAllUsersAsync()
+    public async Task<PagedResponse<List<GetUserDTO>>> GetAllUsersAsync(UserFilter userFilter)
     {
-        var users = await userManager.Users.ToListAsync();
+        var validFilter = new ValidFilter(userFilter.PageNumber, userFilter.PageSize);
+        var query = userManager.Users.AsQueryable();
 
-        var result = users.Select(u => new GetUserDTO
+        if (!string.IsNullOrEmpty(userFilter.UserName))
         {
-            Id = u.Id,
-            UserName = u.UserName!,
-            Email = u.Email!
-        }).ToList();
-        return new Response<List<GetUserDTO>>(result);
+            query = query.Where(c => c.UserName!.ToLower().Trim().Contains(userFilter.UserName.ToLower().Trim()));
+        }
+
+        var totalRecords = await query.CountAsync();
+
+        var paged = await query
+            .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
+            .Take(validFilter.PageSize)
+            .ToListAsync();
+
+        var mapped = mapper.Map<List<GetUserDTO>>(paged);
+        return new PagedResponse<List<GetUserDTO>>(mapped, totalRecords, validFilter.PageNumber, validFilter.PageSize);
     }
 
     public async Task<Response<GetUserDTO>> GetUserByIdAsync(string id)

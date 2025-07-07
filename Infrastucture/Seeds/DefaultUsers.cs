@@ -11,7 +11,7 @@ public static class DefaultUsers
 
         var user = new IdentityUser()
         {
-            UserName = "admin",
+            UserName = "Admin",
             Email = "admin@gmail.com",
             EmailConfirmed = true,
             PhoneNumber = "918829595",

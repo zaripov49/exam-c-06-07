@@ -34,10 +34,22 @@ public class AccountController(IAccountService accountService) : ControllerBase
         return Ok(new { token });
     }
 
-    [HttpPost("Reset")]
-    public async Task<Response<string>> ResetPassword(ResetPaswordDTO resetPaswordDTO)
+    [HttpPost("request-reset-password")]
+    public async Task<IActionResult> RequestResetPassword([FromBody] ForgotPasswordDto model)
     {
-        return await accountService.ResetPassword(resetPaswordDTO);
+        var message = await accountService.RequestResetPasswordAsync(model);
+        return Ok(message);
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPaswordDTO model)
+    {
+        var result = await accountService.ResetPasswordAsync(model);
+
+        if (!result.Succeeded)
+            return BadRequest(result.Errors);
+
+        return Ok("Password successfully changed");
     }
 
     [HttpPost("Change")]

@@ -13,6 +13,7 @@ using Microsoft.IdentityModel.Tokens;
 namespace Infrastucture.Services;
 
 public class AccountService(UserManager<IdentityUser> userManager,
+        IEmailSender emailSender,
         IHttpContextAccessor contextAccessor,
         IConfiguration config) : IAccountService
 {
@@ -61,17 +62,27 @@ public class AccountService(UserManager<IdentityUser> userManager,
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    public async Task<Response<string>> ResetPassword(ResetPaswordDTO resetPaswordDTO)
+    public async Task<string> RequestResetPasswordAsync(ForgotPasswordDto model)
     {
-        var user = await userManager.FindByNameAsync(resetPaswordDTO.EmailOrUserName);
+        var user = await userManager.FindByEmailAsync(model.Email);
         if (user == null)
-        {
-            return new Response<string>("User not found", HttpStatusCode.NotFound);
-        }
+            return "If the email is registered, you will receive instructions.";
 
         var token = await userManager.GeneratePasswordResetTokenAsync(user);
-        await userManager.ResetPasswordAsync(user, token, resetPaswordDTO.NewPassword);
-        return new Response<string>("Successfuly");
+
+        await emailSender.SendEmailAsync(user.Email!, "Сброс пароля", $"Ваш код: {token}");
+
+        return "Reset password token sent.";
+    }
+
+    public async Task<IdentityResult> ResetPasswordAsync(ResetPaswordDTO model)
+    {
+        var user = await userManager.FindByEmailAsync(model.Email);
+        if (user == null)
+            return IdentityResult.Failed(new IdentityError { Description = "Invalid request" });
+
+        var result = await userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
+        return result;
     }
 
     public async Task<Response<string>> ChangePassword(ChangePasswordDTO changePasswordDTO)

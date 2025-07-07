@@ -151,3 +151,4 @@ C:\Users\user\Desktop\C#\Month 6\Week 4   Registretion\Exam 05-07\WebAPi\obj\Deb
 C:\Users\user\Desktop\C#\Month 6\Week 4   Registretion\Exam 05-07\WebAPi\obj\Debug\net9.0\WebAPi.pdb
 C:\Users\user\Desktop\C#\Month 6\Week 4   Registretion\Exam 05-07\WebAPi\obj\Debug\net9.0\WebAPi.genruntimeconfig.cache
 C:\Users\user\Desktop\C#\Month 6\Week 4   Registretion\Exam 05-07\WebAPi\obj\Debug\net9.0\ref\WebAPi.dll
+C:\Users\user\Desktop\C#\Month 6\Week 4   Registretion\Exam 05-07\WebAPi\obj\Debug\net9.0\WebAPi.sourcelink.json
